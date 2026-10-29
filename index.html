@@ -89,7 +89,6 @@
       <label>Question type
         <select id="quizDirection"><option value="formula">Name → formula</option><option value="name">Formula → name</option></select>
       </label>
-      <button id="newQuiz">New question</button>
     </div>
     <div id="quizLabel" class="eyebrow" style="text-align:center">WHAT IS THE FORMULA?</div>
     <div id="quizQuestion" class="quiz-question">ammonium</div>
@@ -111,8 +110,7 @@
     </div>
     <p class="note" style="text-align:center">You can also type regular formulas like <b>SO4^2-</b>; the quiz accepts them.</p>
     <div id="feedback" class="feedback" aria-live="polite"></div>
-    <div class="quiz-controls"><button id="retry">Retry question</button><button id="showAnswer">Show answer</button><button id="skip">Skip →</button></div>
-    <div class="counter" id="quizScore">Correct: 0 · Attempted: 0</div>
+    <div class="quiz-controls"><button id="retry">Retry question</button><button id="showAnswer">Show answer</button><button id="skip">Next question →</button></div>
   </section>
 
   <section id="list" class="panel hidden">
@@ -154,12 +152,13 @@ const ions = [
   {formula:'IO₃⁻', name:'iodate'}
 ];
 let deck = [...ions], cardIndex = 0, flipped = false, currentQuiz = null, correct = 0, attempted = 0, answered = false;
+let roundNumber = 1, unseenQueue = [], retryQueue = [], retrySet = new Set(), currentWasRetry = false;
 const $ = id => document.getElementById(id);
 function setMode(mode) {
   ['cards','quiz','list'].forEach(id => $(id).classList.toggle('hidden', id !== mode));
   document.querySelectorAll('.tab').forEach(btn => btn.setAttribute('aria-selected', String(btn.dataset.mode === mode)));
   if (mode === 'list') renderList();
-  if (mode === 'quiz' && !currentQuiz) nextQuestion();
+  if (mode === 'quiz' && !currentQuiz) { roundNumber = 0; startRound(); }
 }
 document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
 function renderCard() {
@@ -186,23 +185,66 @@ function normalizeAnswer(s) {
     .replace(/⁺/g, '+').replace(/[⁻−–]/g, '-')
     .replace(/\s+/g, '').replace(/\^/g, '');
 }
+function shuffled(items) {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function updateRoundStatus() {
+  $('roundStatus').textContent = `Round ${roundNumber} · ${unseenQueue.length} first-time questions remaining · ${retryQueue.length} to retry`;
+}
+function startRound() {
+  unseenQueue = shuffled(ions);
+  retryQueue = [];
+  retrySet = new Set();
+  roundNumber++;
+  nextQuestion();
+}
 function nextQuestion() {
-  currentQuiz = ions[Math.floor(Math.random()*ions.length)]; answered = false;
+  if (unseenQueue.length === 0 && retryQueue.length === 0) {
+    unseenQueue = shuffled(ions);
+    roundNumber++;
+    retrySet = new Set();
+  }
+  if (unseenQueue.length > 0) {
+    currentQuiz = unseenQueue.shift();
+    currentWasRetry = false;
+  } else {
+    currentQuiz = retryQueue.shift();
+    currentWasRetry = true;
+  }
+  answered = false;
   const dir = $('quizDirection').value;
-  $('quizLabel').textContent = dir === 'formula' ? 'WHAT IS THE FORMULA?' : 'WHAT IS THE ION NAME?';
+  $('quizLabel').textContent = currentWasRetry ? 'RETRY THIS ION' : (dir === 'formula' ? 'WHAT IS THE FORMULA?' : 'WHAT IS THE ION NAME?');
   $('quizQuestion').textContent = dir === 'formula' ? currentQuiz.name : currentQuiz.formula;
-  $('answerInput').value = ''; $('answerInput').disabled = false; $('feedback').textContent = ''; $('feedback').className = 'feedback'; $('answerInput').focus();
+  $('answerInput').value = ''; $('answerInput').disabled = false;
+  $('feedback').textContent = ''; $('feedback').className = 'feedback';
+  updateRoundStatus();
+  $('answerInput').focus();
 }
 function checkAnswer(event) {
   if (event) event.preventDefault(); if (answered) return;
   const dir = $('quizDirection').value, expected = dir === 'formula' ? currentQuiz.formula : currentQuiz.name;
   const given = normalizeAnswer($('answerInput').value), correctAnswer = normalizeAnswer(expected);
-  // Accept common typed charge forms such as SO4^2- and plain ASCII subscripts.
   const accepted = [correctAnswer, expected.toLowerCase().replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>String('₀₁₂₃₄₅₆₇₈₉'.indexOf(c))).replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g,c=>String('⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c))).replace(/[⁺]/g,'+').replace(/[⁻]/g,'-')].map(normalizeAnswer);
   attempted++; answered = true;
-  if (accepted.includes(given)) { correct++; $('feedback').textContent = 'Correct!'; $('feedback').classList.add('good'); }
-  else { $('feedback').textContent = `Not quite — answer: ${expected}`; $('feedback').classList.add('bad'); }
-  $('answerInput').disabled = true; $('quizScore').textContent = `Correct: ${correct} · Attempted: ${attempted}`;
+  if (accepted.includes(given)) {
+    correct++;
+    $('feedback').textContent = currentWasRetry ? 'Correct — removed from your retry list!' : 'Correct!';
+    $('feedback').classList.add('good');
+    if (currentWasRetry) retrySet.delete(currentQuiz);
+  } else {
+    $('feedback').textContent = `Not quite — answer: ${expected}`;
+    $('feedback').classList.add('bad');
+    if (!retrySet.has(currentQuiz)) { retrySet.add(currentQuiz); retryQueue.push(currentQuiz); }
+    else if (currentWasRetry) { retryQueue.push(currentQuiz); }
+  }
+  $('answerInput').disabled = true;
+  $('quizScore').textContent = `Correct: ${correct} · Attempted: ${attempted}`;
+  updateRoundStatus();
 }
 $('answerForm').addEventListener('submit', checkAnswer);
 document.querySelectorAll('[data-insert]').forEach(button => {
@@ -217,10 +259,11 @@ document.querySelectorAll('[data-insert]').forEach(button => {
     input.setSelectionRange(start + character.length, start + character.length);
   });
 });
-$('newQuiz').addEventListener('click', nextQuestion); $('skip').addEventListener('click', nextQuestion);
-$('retry').addEventListener('click', () => { answered = false; $('answerInput').value = ''; $('answerInput').disabled = false; $('feedback').textContent = ''; $('feedback').className = 'feedback'; $('answerInput').focus(); });
+$('newQuiz').addEventListener('click', () => { roundNumber = 0; startRound(); });
+$('skip').addEventListener('click', nextQuestion);
+$('retry').addEventListener('click', () => { if (!currentQuiz) return; answered = false; $('answerInput').value = ''; $('answerInput').disabled = false; $('feedback').textContent = ''; $('feedback').className = 'feedback'; $('answerInput').focus(); });
 $('showAnswer').addEventListener('click', () => { if (!currentQuiz) return; const dir=$('quizDirection').value; $('feedback').textContent = 'Answer: ' + (dir==='formula' ? currentQuiz.formula : currentQuiz.name); $('feedback').className='feedback'; $('answerInput').disabled=true; answered=true; });
-$('quizDirection').addEventListener('change', nextQuestion);
+$('quizDirection').addEventListener('change', () => { if (currentQuiz) { const dir=$('quizDirection').value; $('quizLabel').textContent = currentWasRetry ? 'RETRY THIS ION' : (dir==='formula' ? 'WHAT IS THE FORMULA?' : 'WHAT IS THE ION NAME?'); $('quizQuestion').textContent = dir==='formula' ? currentQuiz.name : currentQuiz.formula; $('answerInput').value=''; $('answerInput').disabled=false; answered=false; $('feedback').textContent=''; $('feedback').className='feedback'; } });
 function renderList() {
   const q = $('search').value.toLowerCase().trim(); const filtered = ions.filter(i => i.name.includes(q) || i.formula.toLowerCase().includes(q));
   $('ionRows').innerHTML = filtered.map(i => `<tr><td>${ions.indexOf(i)+1}</td><td class="formula">${i.formula}</td><td>${i.name}</td></tr>`).join('');
