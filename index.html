@@ -111,7 +111,7 @@
     </div>
     <p class="note" style="text-align:center">You can also type regular formulas like <b>SO4^2-</b>; the quiz accepts them.</p>
     <div id="feedback" class="feedback" aria-live="polite"></div>
-    <div class="quiz-controls"><button id="showAnswer">Show answer</button><button id="skip">Skip →</button></div>
+    <div class="quiz-controls"><button id="retry">Retry question</button><button id="showAnswer">Show answer</button><button id="skip">Skip →</button></div>
     <div class="counter" id="quizScore">Correct: 0 · Attempted: 0</div>
   </section>
 
@@ -218,6 +218,7 @@ document.querySelectorAll('[data-insert]').forEach(button => {
   });
 });
 $('newQuiz').addEventListener('click', nextQuestion); $('skip').addEventListener('click', nextQuestion);
+$('retry').addEventListener('click', () => { answered = false; $('answerInput').value = ''; $('answerInput').disabled = false; $('feedback').textContent = ''; $('feedback').className = 'feedback'; $('answerInput').focus(); });
 $('showAnswer').addEventListener('click', () => { if (!currentQuiz) return; const dir=$('quizDirection').value; $('feedback').textContent = 'Answer: ' + (dir==='formula' ? currentQuiz.formula : currentQuiz.name); $('feedback').className='feedback'; $('answerInput').disabled=true; answered=true; });
 $('quizDirection').addEventListener('change', nextQuestion);
 function renderList() {
