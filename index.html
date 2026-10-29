@@ -193,9 +193,6 @@ function shuffled(items) {
   }
   return arr;
 }
-function updateRoundStatus() {
-  $('roundStatus').textContent = `Round ${roundNumber} · ${unseenQueue.length} first-time questions remaining · ${retryQueue.length} to retry`;
-}
 function startRound() {
   unseenQueue = shuffled(ions);
   retryQueue = [];
@@ -222,7 +219,6 @@ function nextQuestion() {
   $('quizQuestion').textContent = dir === 'formula' ? currentQuiz.name : currentQuiz.formula;
   $('answerInput').value = ''; $('answerInput').disabled = false;
   $('feedback').textContent = ''; $('feedback').className = 'feedback';
-  updateRoundStatus();
   $('answerInput').focus();
 }
 function checkAnswer(event) {
@@ -243,8 +239,6 @@ function checkAnswer(event) {
     else if (currentWasRetry) { retryQueue.push(currentQuiz); }
   }
   $('answerInput').disabled = true;
-  $('quizScore').textContent = `Correct: ${correct} · Attempted: ${attempted}`;
-  updateRoundStatus();
 }
 $('answerForm').addEventListener('submit', checkAnswer);
 document.querySelectorAll('[data-insert]').forEach(button => {
@@ -259,7 +253,6 @@ document.querySelectorAll('[data-insert]').forEach(button => {
     input.setSelectionRange(start + character.length, start + character.length);
   });
 });
-$('newQuiz').addEventListener('click', () => { roundNumber = 0; startRound(); });
 $('skip').addEventListener('click', nextQuestion);
 $('retry').addEventListener('click', () => { if (!currentQuiz) return; answered = false; $('answerInput').value = ''; $('answerInput').disabled = false; $('feedback').textContent = ''; $('feedback').className = 'feedback'; $('answerInput').focus(); });
 $('showAnswer').addEventListener('click', () => { if (!currentQuiz) return; const dir=$('quizDirection').value; $('feedback').textContent = 'Answer: ' + (dir==='formula' ? currentQuiz.formula : currentQuiz.name); $('feedback').className='feedback'; $('answerInput').disabled=true; answered=true; });
