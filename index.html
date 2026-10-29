@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f7f7f4">
+<title>Polyatomic Ion Study Cards</title>
+<style>
+  :root { color-scheme: light; --bg:#f7f7f4; --panel:#fff; --ink:#222821; --muted:#687168; --line:#dfe3da; --accent:#426b50; --accent-light:#e8f0e8; --wrong:#a53f37; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+  main { width:min(900px,100%); margin:0 auto; padding:28px 18px 48px; }
+  header { margin-bottom:22px; }
+  h1 { font-size:clamp(1.65rem,4vw,2.25rem); margin:0 0 5px; letter-spacing:-.035em; }
+  header p { margin:0; color:var(--muted); }
+  .tabs { display:flex; gap:8px; flex-wrap:wrap; margin:22px 0 16px; }
+  button, select, input { font:inherit; }
+  button { cursor:pointer; border:1px solid var(--line); border-radius:10px; background:var(--panel); color:var(--ink); padding:10px 14px; }
+  button:hover { border-color:#a8b6a8; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline:3px solid #b8d4bd; outline-offset:2px; }
+  .tab[aria-selected="true"], .primary { background:var(--accent); border-color:var(--accent); color:white; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:clamp(16px,4vw,26px); box-shadow:0 5px 22px #24302008; }
+  .toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+  .toolbar label { color:var(--muted); font-size:.92rem; }
+  select, input[type="search"] { border:1px solid var(--line); border-radius:9px; padding:9px 10px; background:white; color:var(--ink); }
+  .card { min-height:270px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border:1px solid var(--line); border-radius:14px; padding:25px 14px; background:linear-gradient(145deg,#fff,#fafbf8); cursor:pointer; user-select:none; }
+  .eyebrow { text-transform:uppercase; letter-spacing:.13em; font-size:.75rem; font-weight:700; color:var(--muted); }
+  .big { font-size:clamp(2.3rem,8vw,4rem); font-weight:650; letter-spacing:-.04em; margin:14px 0 6px; }
+  .sub { color:var(--muted); }
+  .card-actions { display:flex; justify-content:center; flex-wrap:wrap; gap:8px; margin:16px 0; }
+  .progress-wrap { height:6px; background:#edf0e9; border-radius:999px; overflow:hidden; margin-top:14px; }
+  .progress { height:100%; background:var(--accent); width:0; transition:width .2s; }
+  .counter { text-align:center; color:var(--muted); font-size:.9rem; margin-top:8px; }
+  .quiz-question { font-size:clamp(1.5rem,5vw,2.25rem); font-weight:650; text-align:center; margin:22px 0; overflow-wrap:anywhere; }
+  .answer-row { display:flex; gap:8px; max-width:560px; margin:0 auto; }
+  .answer-row input { flex:1; min-width:0; }
+  .formula-tools { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin:10px auto 0; max-width:650px; }
+  .formula-tools .tool-label { flex-basis:100%; text-align:center; color:var(--muted); font-size:.85rem; margin-top:4px; }
+  .formula-tools button { padding:6px 10px; min-width:38px; }
+  .feedback { min-height:28px; text-align:center; margin:12px 0 0; font-weight:600; }
+  .good { color:var(--accent); } .bad { color:var(--wrong); }
+  .quiz-controls { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:14px; }
+  .list-tools { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .list-tools input { flex:1; min-width:190px; }
+  .table-wrap { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; }
+  th,td { text-align:left; padding:11px 10px; border-bottom:1px solid var(--line); }
+  th { color:var(--muted); font-size:.82rem; text-transform:uppercase; letter-spacing:.06em; }
+  td.formula { font-size:1.1rem; font-weight:650; white-space:nowrap; }
+  .hidden { display:none !important; }
+  .note { font-size:.88rem; color:var(--muted); margin:16px 2px 0; }
+  @media(max-width:520px) { main {padding:22px 12px 36px;} .answer-row {flex-direction:column;} .card {min-height:235px;} }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Polyatomic Ion Study Cards</h1>
+    <p>Practice the ion names, formulas, and charges. Includes bromate and iodate.</p>
+  </header>
+  <nav class="tabs" aria-label="Study mode">
+    <button class="tab" data-mode="cards" aria-selected="true">Flashcards</button>
+    <button class="tab" data-mode="quiz" aria-selected="false">Quiz</button>
+    <button class="tab" data-mode="list" aria-selected="false">Study list</button>
+  </nav>
+
+  <section id="cards" class="panel">
+    <div class="toolbar">
+      <label>Card front
+        <select id="cardDirection"><option value="name">Ion name</option><option value="formula">Formula</option></select>
+      </label>
+      <button id="shuffle">Shuffle cards</button>
+    </div>
+    <div id="flashcard" class="card" role="button" tabindex="0" aria-label="Flashcard. Click to flip.">
+      <div id="cardLabel" class="eyebrow">ION NAME</div>
+      <div id="cardMain" class="big">ammonium</div>
+      <div id="cardHint" class="sub">Tap card to reveal formula</div>
+    </div>
+    <div class="card-actions">
+      <button id="prev">← Previous</button><button id="flip" class="primary">Flip card</button><button id="next">Next →</button>
+    </div>
+    <div class="progress-wrap"><div id="progress" class="progress"></div></div>
+    <div id="cardCounter" class="counter">1 of 26</div>
+    <p class="note">Keyboard: ← / → to change cards, Space to flip.</p>
+  </section>
+
+  <section id="quiz" class="panel hidden">
+    <div class="toolbar">
+      <label>Question type
+        <select id="quizDirection"><option value="formula">Name → formula</option><option value="name">Formula → name</option></select>
+      </label>
+      <button id="newQuiz">New question</button>
+    </div>
+    <div id="quizLabel" class="eyebrow" style="text-align:center">WHAT IS THE FORMULA?</div>
+    <div id="quizQuestion" class="quiz-question">ammonium</div>
+    <form id="answerForm" class="answer-row">
+      <input id="answerInput" type="text" autocomplete="off" spellcheck="false" placeholder="Type your answer…" aria-label="Your answer">
+      <button class="primary" type="submit">Check answer</button>
+    </form>
+    <div class="formula-tools" id="formulaTools" aria-label="Formula character shortcuts">
+      <div class="tool-label">Subscript (insert into formula)</div>
+      <button type="button" data-insert="₀">₀</button><button type="button" data-insert="₁">₁</button>
+      <button type="button" data-insert="₂">₂</button><button type="button" data-insert="₃">₃</button>
+      <button type="button" data-insert="₄">₄</button><button type="button" data-insert="₅">₅</button>
+      <button type="button" data-insert="₆">₆</button><button type="button" data-insert="₇">₇</button>
+      <button type="button" data-insert="₈">₈</button><button type="button" data-insert="₉">₉</button>
+      <div class="tool-label">Superscript charge (insert at the end)</div>
+      <button type="button" data-insert="⁰">⁰</button><button type="button" data-insert="¹">¹</button>
+      <button type="button" data-insert="²">²</button><button type="button" data-insert="³">³</button>
+      <button type="button" data-insert="⁺">⁺</button><button type="button" data-insert="⁻">⁻</button>
+    </div>
+    <p class="note" style="text-align:center">You can also type regular formulas like <b>SO4^2-</b>; the quiz accepts them.</p>
+    <div id="feedback" class="feedback" aria-live="polite"></div>
+    <div class="quiz-controls"><button id="showAnswer">Show answer</button><button id="skip">Skip →</button></div>
+    <div class="counter" id="quizScore">Correct: 0 · Attempted: 0</div>
+  </section>
+
+  <section id="list" class="panel hidden">
+    <div class="list-tools">
+      <input type="search" id="search" placeholder="Search names or formulas…" aria-label="Search ions">
+      <button id="clearSearch">Clear</button>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>#</th><th>Formula</th><th>Name</th></tr></thead><tbody id="ionRows"></tbody></table></div>
+    <p id="listCount" class="note"></p>
+  </section>
+</main>
+<script>
+const ions = [
+  {formula:'NH₄⁺', name:'ammonium'},
+  {formula:'NO₃⁻', name:'nitrate'},
+  {formula:'NO₂⁻', name:'nitrite'},
+  {formula:'CrO₄²⁻', name:'chromate'},
+  {formula:'Cr₂O₇²⁻', name:'dichromate'},
+  {formula:'CN⁻', name:'cyanide'},
+  {formula:'SCN⁻', name:'thiocyanate'},
+  {formula:'MnO₄⁻', name:'permanganate'},
+  {formula:'OH⁻', name:'hydroxide'},
+  {formula:'O₂²⁻', name:'peroxide'},
+  {formula:'HSO₄⁻', name:'hydrogen sulfate'},
+  {formula:'SO₄²⁻', name:'sulfate'},
+  {formula:'SO₃²⁻', name:'sulfite'},
+  {formula:'PO₄³⁻', name:'phosphate'},
+  {formula:'PO₃³⁻', name:'phosphite'},
+  {formula:'HPO₄²⁻', name:'hydrogen phosphate'},
+  {formula:'H₂PO₄⁻', name:'dihydrogen phosphate'},
+  {formula:'C₂H₃O₂⁻', name:'acetate'},
+  {formula:'ClO₄⁻', name:'perchlorate'},
+  {formula:'ClO₃⁻', name:'chlorate'},
+  {formula:'ClO₂⁻', name:'chlorite'},
+  {formula:'ClO⁻', name:'hypochlorite'},
+  {formula:'CO₃²⁻', name:'carbonate'},
+  {formula:'HCO₃⁻', name:'bicarbonate'},
+  {formula:'BrO₃⁻', name:'bromate'},
+  {formula:'IO₃⁻', name:'iodate'}
+];
+let deck = [...ions], cardIndex = 0, flipped = false, currentQuiz = null, correct = 0, attempted = 0, answered = false;
+const $ = id => document.getElementById(id);
+function setMode(mode) {
+  ['cards','quiz','list'].forEach(id => $(id).classList.toggle('hidden', id !== mode));
+  document.querySelectorAll('.tab').forEach(btn => btn.setAttribute('aria-selected', String(btn.dataset.mode === mode)));
+  if (mode === 'list') renderList();
+  if (mode === 'quiz' && !currentQuiz) nextQuestion();
+}
+document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
+function renderCard() {
+  const ion = deck[cardIndex], direction = $('cardDirection').value;
+  const showFormula = flipped ? direction === 'name' : direction === 'formula';
+  $('cardLabel').textContent = showFormula ? 'FORMULA' : 'ION NAME';
+  $('cardMain').textContent = showFormula ? ion.formula : ion.name;
+  $('cardHint').textContent = flipped ? 'Tap to see the other side' : 'Tap card to reveal ' + (direction === 'name' ? 'formula' : 'name');
+  $('cardCounter').textContent = `${cardIndex + 1} of ${deck.length}`;
+  $('progress').style.width = `${((cardIndex + 1) / deck.length) * 100}%`;
+}
+function flipCard() { flipped = !flipped; renderCard(); }
+$('flashcard').addEventListener('click', flipCard); $('flip').addEventListener('click', flipCard);
+$('flashcard').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flipCard(); } });
+$('prev').addEventListener('click', () => { cardIndex = (cardIndex - 1 + deck.length) % deck.length; flipped = false; renderCard(); });
+$('next').addEventListener('click', () => { cardIndex = (cardIndex + 1) % deck.length; flipped = false; renderCard(); });
+$('cardDirection').addEventListener('change', () => { flipped = false; renderCard(); });
+$('shuffle').addEventListener('click', () => { for (let i=deck.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; } cardIndex=0; flipped=false; renderCard(); });
+document.addEventListener('keydown', e => { if (!$('cards').classList.contains('hidden') && !['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)) { if(e.key==='ArrowRight') $('next').click(); if(e.key==='ArrowLeft') $('prev').click(); if(e.key===' ') { e.preventDefault(); flipCard(); } } });
+function normalizeAnswer(s) {
+  return s.toLowerCase().trim()
+    .replace(/[₀₁₂₃₄₅₆₇₈₉]/g, c => String('₀₁₂₃₄₅₆₇₈₉'.indexOf(c)))
+    .replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, c => String('⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c)))
+    .replace(/⁺/g, '+').replace(/[⁻−–]/g, '-')
+    .replace(/\s+/g, '').replace(/\^/g, '');
+}
+function nextQuestion() {
+  currentQuiz = ions[Math.floor(Math.random()*ions.length)]; answered = false;
+  const dir = $('quizDirection').value;
+  $('quizLabel').textContent = dir === 'formula' ? 'WHAT IS THE FORMULA?' : 'WHAT IS THE ION NAME?';
+  $('quizQuestion').textContent = dir === 'formula' ? currentQuiz.name : currentQuiz.formula;
+  $('answerInput').value = ''; $('answerInput').disabled = false; $('feedback').textContent = ''; $('feedback').className = 'feedback'; $('answerInput').focus();
+}
+function checkAnswer(event) {
+  if (event) event.preventDefault(); if (answered) return;
+  const dir = $('quizDirection').value, expected = dir === 'formula' ? currentQuiz.formula : currentQuiz.name;
+  const given = normalizeAnswer($('answerInput').value), correctAnswer = normalizeAnswer(expected);
+  // Accept common typed charge forms such as SO4^2- and plain ASCII subscripts.
+  const accepted = [correctAnswer, expected.toLowerCase().replace(/[₀₁₂₃₄₅₆₇₈₉]/g,c=>String('₀₁₂₃₄₅₆₇₈₉'.indexOf(c))).replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g,c=>String('⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c))).replace(/[⁺]/g,'+').replace(/[⁻]/g,'-')].map(normalizeAnswer);
+  attempted++; answered = true;
+  if (accepted.includes(given)) { correct++; $('feedback').textContent = 'Correct!'; $('feedback').classList.add('good'); }
+  else { $('feedback').textContent = `Not quite — answer: ${expected}`; $('feedback').classList.add('bad'); }
+  $('answerInput').disabled = true; $('quizScore').textContent = `Correct: ${correct} · Attempted: ${attempted}`;
+}
+$('answerForm').addEventListener('submit', checkAnswer);
+document.querySelectorAll('[data-insert]').forEach(button => {
+  button.addEventListener('click', () => {
+    const input = $('answerInput');
+    if (input.disabled) return;
+    const character = button.dataset.insert;
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? input.value.length;
+    input.value = input.value.slice(0, start) + character + input.value.slice(end);
+    input.focus();
+    input.setSelectionRange(start + character.length, start + character.length);
+  });
+});
+$('newQuiz').addEventListener('click', nextQuestion); $('skip').addEventListener('click', nextQuestion);
+$('showAnswer').addEventListener('click', () => { if (!currentQuiz) return; const dir=$('quizDirection').value; $('feedback').textContent = 'Answer: ' + (dir==='formula' ? currentQuiz.formula : currentQuiz.name); $('feedback').className='feedback'; $('answerInput').disabled=true; answered=true; });
+$('quizDirection').addEventListener('change', nextQuestion);
+function renderList() {
+  const q = $('search').value.toLowerCase().trim(); const filtered = ions.filter(i => i.name.includes(q) || i.formula.toLowerCase().includes(q));
+  $('ionRows').innerHTML = filtered.map(i => `<tr><td>${ions.indexOf(i)+1}</td><td class="formula">${i.formula}</td><td>${i.name}</td></tr>`).join('');
+  $('listCount').textContent = `${filtered.length} of ${ions.length} ions`;
+}
+$('search').addEventListener('input', renderList); $('clearSearch').addEventListener('click', () => { $('search').value=''; renderList(); $('search').focus(); });
+renderCard(); renderList();
+</script>
+</body>
+</html>
